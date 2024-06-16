@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculate Damage</title>
+    <style>
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .content {
+            flex: 1;
+        }
+        
+        
+
+        body {
+            background-color: rgb(43, 42, 42);
+            color: whitesmoke;
+            font-family: Arial, sans-serif;
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 30%;
+            margin: 0 10px;
+        }
+
+        input[type="submit"], input[type="button"] {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #7b7b7b;
+            color: #fff;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        input[type="submit"]:hover, input[type="button"]:hover {
+            background-color: #7fa2ba;
+        }
+
+        .result-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .result {
+            width: 45%;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+
+        .comparison-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .comparison {
+            width: 90%;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        @keyframes rainbow {
+            0% { color: red; }
+            20% { color: orange; }
+            40% { color: yellow; }
+            60% { color: green; }
+            80% { color: blue; }
+            100% { color: purple; }
+        }
+
+        .rainbow-text {
+            animation: rainbow 6s infinite;
+        }
+
+    </style>
+</head>
+<body>
+    <p style="text-align: center;" class="rainbow-text">
+        Made By A.T.M.R
+    </p>
+
+    <h1 style="text-align: center" >
+        Damage calculator
+    </h1>
+        <p style="text-align: center">For WuWa/genshin/star rail </p>
+    
+
+    <div class="input-container">
+        <div class="input-group">
+            <label for="atk">Raw Attack:</label>
+            <input type="number" id="atk" placeholder="Enter raw attack">
+        </div>
+        <div class="input-group">
+            <label for="cdmg">Crit Damage (%):</label>
+            <input type="number" id="cdmg" placeholder="Enter crit damage">
+        </div>
+        <div class="input-group">
+            <label for="crate">Crit Rate (%):</label>
+            <input type="number" id="crate" placeholder="Enter crit rate">
+        </div>
+        <input type="submit" value="Get results" onclick="calc();">
+        <div class="input-group">
+            <label for="resultName">Result Name:</label>
+            <input type="text" id="resultName" placeholder="Enter result name">
+        </div>
+        <input type="button" value="Keep" onclick="keepResults();">
+    </div>
+
+    <div class="result-container">
+        <div id="current-results" class="result">
+            <h3>Current Results</h3>
+            <p id="show-current"></p>
+        </div>
+        <div id="kept-results" class="result">
+            <h3>Kept Results</h3>
+            <p id="show-kept"></p>
+        </div>
+    </div>
+
+    <div class="comparison-container">
+        <div id="comparison" class="comparison">
+            <h3>Comparison</h3>
+            <p id="show-comparison"></p>
+        </div>
+    </div>
+
+    <script>
+        var keptResults = null;
+        var keptResultName = '';
+
+        function calc() {
+            var atk = parseFloat(document.getElementById("atk").value);
+            var cdmg = parseFloat(document.getElementById("cdmg").value) / 100;
+            var crate = parseFloat(document.getElementById("crate").value) / 100;
+    
+            function rollCrit() {
+                return Math.random() <= crate;
+            }
+    
+            function calculateDamage(atk, cdmg, isCrit) {
+                return isCrit ? atk * (1 + cdmg) : atk;
+            }
+    
+            function simulateAttacks(numAttacks) {
+                var totalDmg = 0;
+                for (var i = 0; i < numAttacks; i++) {
+                    var isCrit = rollCrit();
+                    totalDmg += calculateDamage(atk, cdmg, isCrit);
+                }
+                return totalDmg;
+            }
+    
+            var dmg10 = simulateAttacks(10);
+            var dmg100 = simulateAttacks(100);
+            var dmg1000 = simulateAttacks(1000);
+    
+            var currentResults = `
+                <p>Total damage for 10 attacks: ${dmg10.toFixed(2)}</p>
+                <p>Total damage for 100 attacks: ${dmg100.toFixed(2)}</p>
+                <p>Total damage for 1000 attacks: ${dmg1000.toFixed(2)}</p>
+            `;
+            
+            document.getElementById("show-current").innerHTML = currentResults;
+
+            if (keptResults) {
+                var diff10 = dmg10 - keptResults.dmg10;
+                var diff100 = dmg100 - keptResults.dmg100;
+                var diff1000 = dmg1000 - keptResults.dmg1000;
+                var comparisonText = '';
+
+                if (diff10 < 0 && diff100 < 0 && diff1000 < 0) {
+                    comparisonText = `Current results performed worse than ${keptResultName}`;
+                } else if (diff10 > 0 && diff100 > 0 && diff1000 > 0) {
+                    comparisonText = `Current results performed better than ${keptResultName}`;
+                } else {
+                    comparisonText = `Current results performed differently compared to ${keptResultName}`;
+                }
+
+                var comparison = `
+                    <p>${comparisonText}</p>
+                    <p>Difference for 10 attacks: ${diff10.toFixed(2)}</p>
+                    <p>Difference for 100 attacks: ${diff100.toFixed(2)}</p>
+                    <p>Difference for 1000 attacks: ${diff1000.toFixed(2)}</p>
+                `;
+                document.getElementById("show-comparison").innerHTML = comparison;
+            }
+        }
+
+        function keepResults() {
+            var atk = parseFloat(document.getElementById("atk").value);
+            var cdmg = parseFloat(document.getElementById("cdmg").value) / 100;
+            var crate = parseFloat(document.getElementById("crate").value) / 100;
+            var resultName = document.getElementById("resultName").value;
+
+            function rollCrit() {
+                return Math.random() <= crate;
+            }
+    
+            function calculateDamage(atk, cdmg, isCrit) {
+                return isCrit ? atk * (1 + cdmg) : atk;
+            }
+    
+            function simulateAttacks(numAttacks) {
+                var totalDmg = 0;
+                for (var i = 0; i < numAttacks; i++) {
+                    var isCrit = rollCrit();
+                    totalDmg += calculateDamage(atk, cdmg, isCrit);
+                }
+                return totalDmg;
+            }
+    
+            keptResults = {
+                dmg10: simulateAttacks(10),
+                dmg100: simulateAttacks(100),
+                dmg1000: simulateAttacks(1000)
+            };
+            keptResultName = resultName || 'Unnamed Result';
+    
+            var keptResultsHTML = `
+                <p>Total damage for 10 attacks (${keptResultName}): ${keptResults.dmg10.toFixed(2)}</p>
+                <p>Total damage for 100 attacks (${keptResultName}): ${keptResults.dmg100.toFixed(2)}</p>
+                <p>Total damage for 1000 attacks (${keptResultName}): ${keptResults.dmg1000.toFixed(2)}</p>
+            `;
+            
+            document.getElementById("show-kept").innerHTML = keptResultsHTML;
+        }
+    </script>
+    <br> <br> <br> <br>
+<footer>
+   <p> keep in mind this is just a raw comparison, not the real damage dealt, if you want to see which set benefits more your character statistically only, keep in mind there is a lot of calculations needed to be done to get the exact damage (monsters defense, talent level, elemental dmg, ect.....)
+</p>
+</footer>
+</body>
+</html>
